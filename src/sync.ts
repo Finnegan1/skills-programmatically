@@ -43,7 +43,7 @@ function shortenPath(fullPath: string, cwd: string): string {
  * Searches both top-level packages and scoped packages (@org/pkg).
  * Returns discovered skills with their source package name.
  */
-async function discoverNodeModuleSkills(
+export async function discoverNodeModuleSkills(
   cwd: string
 ): Promise<Array<Skill & { packageName: string }>> {
   const nodeModulesDir = join(cwd, 'node_modules');
