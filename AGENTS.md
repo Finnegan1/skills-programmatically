@@ -25,7 +25,8 @@ Aliases: `skills a` works for `add`. `skills i`, `skills install` (no args) rest
 
 ```
 src/
-├── cli.ts           # Main entry point, command routing, init/check/update
+├── cli.ts           # CLI entry point, command routing, init/check/update
+├── sdk.ts           # Programmatic SDK entry point (non-interactive, type-safe)
 ├── cli.test.ts      # CLI tests
 ├── add.ts           # Core add command logic
 ├── add-prompt.test.ts # Add prompt behavior tests
@@ -75,6 +76,32 @@ tests/
 ├── xdg-config-paths.test.ts   # XDG global path handling tests
 └── dist.test.ts               # Tests for built distribution
 ```
+
+## SDK (Programmatic API)
+
+`src/sdk.ts` provides a non-interactive, type-safe SDK for using skills as a library. It wraps the same lower-level functions used by the CLI but without prompts, `process.exit()`, or console output. All results use discriminated unions: `{ ok: true, data } | { ok: false, error, code }`.
+
+### SDK vs CLI architecture
+
+The CLI (`src/cli.ts`, `src/add.ts`, `src/remove.ts`) uses interactive prompts (`@clack/prompts`), `console.log`, and `process.exit()`. The SDK (`src/sdk.ts`) composes the same lower-level functions directly:
+
+| Lower-level module | What it provides | Used by SDK |
+|---|---|---|
+| `src/installer.ts` | `installSkillForAgent()`, `listInstalledSkills()`, `getCanonicalPath()` | `add()`, `list()`, `remove()`, `sync()` |
+| `src/skills.ts` | `discoverSkills()`, `filterSkills()` | `add()` |
+| `src/source-parser.ts` | `parseSource()` | `add()` |
+| `src/git.ts` | `cloneRepo()`, `cleanupTempDir()` | `add()` |
+| `src/skill-lock.ts` | `readSkillLock()`, `addSkillToLock()`, `fetchSkillFolderHash()` | `add()`, `check()`, `update()` |
+| `src/local-lock.ts` | `readLocalLock()`, `addSkillToLocalLock()` | `add()`, `sync()`, `installFromLock()` |
+| `src/find.ts` | `searchSkillsAPI()` | `find()` |
+| `src/sync.ts` | `discoverNodeModuleSkills()` | `sync()` |
+| `src/providers/wellknown.ts` | `wellKnownProvider.fetchAllSkills()` | `add()` (well-known sources) |
+
+### Build entries
+
+`build.config.mjs` defines two bundle entry points:
+- `src/cli.ts` → `dist/cli.mjs` (CLI)
+- `src/sdk.ts` → `dist/sdk.mjs` (SDK, exported via `package.json` `"exports"` and `"main"`)
 
 ## Update Checking System
 

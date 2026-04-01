@@ -90,6 +90,69 @@ When installing interactively, you can choose:
 | **Symlink** (Recommended) | Creates symlinks from each agent to a canonical copy. Single source of truth, easy updates. |
 | **Copy**                  | Creates independent copies for each agent. Use when symlinks aren't supported.              |
 
+## Programmatic SDK
+
+You can use `skills` as a library in your Node.js application. All SDK functions return type-safe discriminated union results (`{ ok: true, data } | { ok: false, error, code }`).
+
+```bash
+npm install skills
+```
+
+```typescript
+import { add, remove, list, find, check, update, detectAgents, init, sync, installFromLock } from 'skills';
+
+// List installed skills
+const result = await list({ global: true });
+if (result.ok) {
+  for (const skill of result.data) {
+    console.log(skill.name, skill.agents);
+  }
+}
+
+// Install a skill
+const addResult = await add('vercel-labs/agent-skills', {
+  agents: ['claude-code', 'cursor'],
+  global: true,
+  skills: ['frontend-design'],
+});
+if (addResult.ok) {
+  console.log(`Installed ${addResult.data.installed.length} skills`);
+}
+
+// Detect installed agents
+const agents = await detectAgents();
+
+// Search for skills
+const searchResult = await find('typescript');
+
+// Check for updates
+const checkResult = await check();
+
+// Remove skills
+const removeResult = await remove({
+  skills: ['frontend-design'],
+  global: true,
+  agents: ['claude-code'],
+});
+```
+
+### SDK Functions
+
+| Function | Description |
+|----------|-------------|
+| `add(source, options)` | Install skills from GitHub repos, URLs, local paths, or well-known endpoints |
+| `remove(options)` | Remove installed skills from agents |
+| `list(options?)` | List installed skills |
+| `find(query)` | Search for skills via the skills.sh API |
+| `check(options?)` | Check for available skill updates |
+| `update(options)` | Update all skills to latest versions |
+| `detectAgents()` | Detect which coding agents are installed |
+| `init(options?)` | Create a new SKILL.md template |
+| `sync(options)` | Sync skills from node_modules |
+| `installFromLock(options?)` | Restore skills from skills-lock.json |
+
+The SDK also re-exports lower-level utilities for advanced use: `parseSource`, `discoverSkills`, `filterSkills`, `sanitizeName`, `agents`, `readSkillLock`, `readLocalLock`, and more. See `src/sdk.ts` for the full list.
+
 ## Other Commands
 
 | Command                      | Description                                    |
