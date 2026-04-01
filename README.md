@@ -2,6 +2,8 @@
 
 The CLI for the open agent skills ecosystem.
 
+> Note: This repository is a fork of the original `skills` package. It adds a programmatic SDK so the functionallity can be call from code instead of only using the CLI.
+
 <!-- agent-list:start -->
 Supports **OpenCode**, **Claude Code**, **Codex**, **Cursor**, and [41 more](#available-agents).
 <!-- agent-list:end -->
